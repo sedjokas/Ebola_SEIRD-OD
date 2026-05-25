@@ -1,7 +1,7 @@
 """
-seird_od_model.py
+seihrf_od_model.py
 =================
-SEIRD-OD: Coupled epidemic–opinion-dynamics model for the 2026
+SEIHRF-OD: Coupled epidemic–opinion-dynamics model for the 2026
 Bundibugyo Ebola outbreak (Ituri Province, DRC).
 
 Mathematical reference
@@ -10,7 +10,7 @@ Equations (1)–(12) and the opinion-dynamics layer (Eq. 13) from:
 
   "Political distrust, armed conflict, and body reclamation drive Ebola
    transmission dynamics in eastern Democratic Republic of Congo:
-   a coupled epidemic–opinion dynamics model (SEIRD-OD)"
+   a coupled epidemic–opinion dynamics model (SEIHRF-OD)"
    [Submitted to The Lancet Infectious Diseases, 2026]
 
 Repository data source
@@ -27,8 +27,8 @@ Model verified symbolically with SymPy 1.13 (five checks):
 
 Usage
 -----
->>> from src.seird_od_model import SEIRD_OD, DEFAULT_PARAMS
->>> model = SEIRD_OD(DEFAULT_PARAMS)
+>>> from src.seihrf_od_model import SEIHRF_OD, DEFAULT_PARAMS
+>>> model = SEIHRF_OD(DEFAULT_PARAMS)
 >>> sol   = model.run(t_end=90)
 >>> t, y  = sol.t, sol.y
 """
@@ -43,7 +43,7 @@ from scipy.integrate import solve_ivp
 
 @dataclass
 class Params:
-    """All SEIRD-OD parameters with units and interpretations."""
+    """All SEIHRF-OD parameters with units and interpretations."""
 
     # Transmission rates (day⁻¹)
     beta_I:  float = 0.38   # community transmission
@@ -111,7 +111,7 @@ def conflict_C(t: float, scale: float = 1.0) -> float:
 
 def _rhs(t: float, y: np.ndarray, p: Params) -> list[float]:
     """
-    Right-hand side of the 12-dimensional SEIRD-OD ODE system.
+    Right-hand side of the 12-dimensional SEIHRF-OD ODE system.
 
     State vector
     ------------
@@ -187,9 +187,9 @@ def _rhs(t: float, y: np.ndarray, p: Params) -> list[float]:
 
 # ── Main model class ──────────────────────────────────────────────────────────
 
-class SEIRD_OD:
+class SEIHRF_OD:
     """
-    SEIRD-OD model object.
+    SEIHRF-OD model object.
 
     Parameters
     ----------
@@ -198,12 +198,12 @@ class SEIRD_OD:
 
     Examples
     --------
-    >>> model = SEIRD_OD(DEFAULT_PARAMS)
+    >>> model = SEIHRF_OD(DEFAULT_PARAMS)
     >>> sol   = model.run(t_end=90)
 
     # Scenario S3: zero body reclamation
     >>> p_s3 = Params(beta_FR_scale=0.0)
-    >>> sol_s3 = SEIRD_OD(p_s3).run()
+    >>> sol_s3 = SEIHRF_OD(p_s3).run()
     """
 
     STATE_LABELS = [
