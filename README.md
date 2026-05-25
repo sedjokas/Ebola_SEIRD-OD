@@ -222,7 +222,7 @@ Five symbolic checks (SymPy 1.13) confirm model consistency:
 If you use this code, please cite:
 
 ```
-[Authors redacted for peer review]
+Selain K. Kasereka et al.
 "Political distrust, armed conflict, and body reclamation drive Ebola
 transmission dynamics in eastern Democratic Republic of Congo:
 a coupled epidemic–opinion dynamics model (SEIRD-OD)"
