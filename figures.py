@@ -1,7 +1,7 @@
 """
 figures.py
 ==========
-Generates all publication figures for the SEIRD-OD manuscript.
+Generates all publication figures for the SEIHRF-OD manuscript.
 
   Figure 1  — Epidemic curve · φ(t) · contact-tracing compliance
   Figure 2  — Analytical R₀ analysis
@@ -38,7 +38,7 @@ from scipy.stats import gaussian_kde
 
 # Add src/ to path so this script can run from the repo root
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
-from seird_od_model import SEIRD_OD, Params, DEFAULT_PARAMS, R0_analytical
+from seihrf_od_model import SEIHRF_OD, Params, DEFAULT_PARAMS, R0_analytical
 
 
 # ── Style ─────────────────────────────────────────────────────────────────────
@@ -87,8 +87,8 @@ CONFLICT_WINDOWS = [(5, 12), (28, 35), (55, 62)]  # days
 DAYS = np.linspace(0, 90, 900)
 
 
-def _solve(params: Params) -> SEIRD_OD:
-    m = SEIRD_OD(params)
+def _solve(params: Params) -> SEIHRF_OD:
+    m = SEIHRF_OD(params)
     m._sol = m.run()
     m._sol_dense = m._sol.sol(DAYS)
     return m
@@ -580,7 +580,7 @@ def figureS1(outdir: str):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Generate SEIRD-OD manuscript figures.")
+        description="Generate SEIHRF-OD manuscript figures.")
     parser.add_argument("--fig", nargs="*",
                         help="Figure numbers to generate (default: all). "
                              "Use 1 2 3 4 5 S1.")
