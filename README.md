@@ -1,11 +1,11 @@
-# Ebola SEIRD-OD
+# Ebola SEIHRF-OD
 
 This repository contains the code and figures for:
 
 > Selain K. Kasereka et al., "Political distrust, armed conflict, and body
 > reclamation drive Ebola transmission dynamics in eastern Democratic Republic
-> of Congo: a coupled epidemic and opinion dynamics model (SEIRD-OD)"
-> under review in *The Lancet Infectious Diseases*, 2026
+> of Congo: a coupled epidemic–opinion dynamics model (SEIHRF-OD)"
+> — under review, *The Lancet Infectious Diseases*, 2026
 >
 > INRB/INOHA Kinshasa · INSP Kinshasa · University of Oxford · Northeastern University
 
@@ -14,12 +14,12 @@ This repository contains the code and figures for:
 ## What this is
 
 When families in eastern DRC started reclaiming the bodies of relatives who
-died of Ebola from treatment centres (sometimes violently) and carrying them
+died of Ebola from treatment centres — sometimes violently — and carrying them
 home for traditional burial, existing epidemic models had no way to represent
 that. Those models assume everyone follows public-health guidance. Here they
 clearly did not.
 
-SEIRD-OD splits the population into two groups: people who accept the EVD
+SEIHRF-OD splits the population into two groups: people who accept the EVD
 diagnosis (Believers, *B*) and people who deny it (Sceptics, *N*). Sceptics
 avoid hospitals and their deceased relatives' bodies end up in a separate
 compartment, F_R, with a transmission rate far higher than a safe burial.
@@ -88,10 +88,10 @@ Sceptics handle the bodies; Believers do not.
 ### Opinion dynamics
 
 ```
-dφ/dt = α·φ(1−φ)           # scepticism spreads person-to-person
-       − β_D·D_vis(t)·φ    # visible deaths erode denial
-       − γ_comm·φ           # health communication shifts opinion
-       + δ_C·C(t)·φ         # conflict reinforces distrust
+dφ/dt = α·φ(1−φ)           — scepticism spreads person-to-person
+       − β_D·D_vis(t)·φ    — visible deaths erode denial
+       − γ_comm·φ           — health communication shifts opinion
+       + δ_C·C(t)·φ         — conflict reinforces distrust
 ```
 
 ### Analytical R₀
@@ -112,10 +112,10 @@ a homogeneous model underestimates R₀ by roughly 33%.
 
 | | Intervention | Change | Deaths averted (day 90) |
 |---|---|---|---|
-| S1 | Double communication rate from day 14 | γ_comm × 2 | 34% (21 to 47%) |
-| S2 | Halve conflict intensity | C(t) × 0.5 | 18% (10 to 26%) |
-| S3 | Enforce safe burial throughout | β_FR = 0 | 41% (29 to 53%) |
-| S1+S3 | Both | both above | 58% (44 to 70%) |
+| S1 | Double communication rate from day 14 | γ_comm × 2 | 34% (21–47%) |
+| S2 | Halve conflict intensity | C(t) × 0.5 | 18% (10–26%) |
+| S3 | Enforce safe burial throughout | β_FR = 0 | 41% (29–53%) |
+| S1+S3 | Both | — | 58% (44–70%) |
 
 Intervals are 95% posterior credible intervals from 80 MCMC draws.
 
@@ -128,7 +128,7 @@ All epidemiological input data come from
 (build `235a3c3`, snapshot `493d506`, accessed 22 May 2026). Files used:
 
 ```
-insp_sitrep__new_confirmed_cases__daily.csv      SitReps 001 to 007
+insp_sitrep__new_confirmed_cases__daily.csv      SitReps 001–007
 insp_sitrep__cumulative_confirmed_deaths__daily.csv
 insp_sitrep__cumulative_contacts_isolated__daily.csv
 insp_sitrep__new_contacts_listed__daily.csv
@@ -154,17 +154,17 @@ WHO situation reports used for validation:
 ## Usage
 
 ```python
-from src.seird_od_model import SEIRD_OD, Params, DEFAULT_PARAMS, R0_analytical
+from src.seird_od_model import SEIHRF_OD, Params, DEFAULT_PARAMS, R0_analytical
 
-model = SEIRD_OD(DEFAULT_PARAMS)
+model = SEIHRF_OD(DEFAULT_PARAMS)
 sol   = model.run(t_end=90)
 
 phi        = model.phi(sol)
 deaths     = model.cumulative_deaths(sol)
 incidence  = model.daily_incidence(sol)
 
-# Scenario S3: zero body reclamation
-sol_s3 = SEIRD_OD(Params(beta_FR_scale=0.0)).run()
+# Scenario S3 — zero body reclamation
+sol_s3 = SEIHRF_OD(Params(beta_FR_scale=0.0)).run()
 
 r = R0_analytical(DEFAULT_PARAMS)
 # {'R0': 1.2, 'R0_B': 0.83, 'R0_N': 1.8, 'phi0': 0.38}
@@ -180,7 +180,7 @@ r = R0_analytical(DEFAULT_PARAMS)
   author  = {Kasereka, Selain K. and others},
   title   = {Political distrust, armed conflict, and body reclamation drive
              {Ebola} transmission dynamics in eastern {DRC}:
-             a coupled epidemic--opinion dynamics model ({SEIRD-OD})},
+             a coupled epidemic--opinion dynamics model ({SEIHRF-OD})},
   journal = {The Lancet Infectious Diseases},
   year    = {2026},
   note    = {Under review}
@@ -188,8 +188,8 @@ r = R0_analytical(DEFAULT_PARAMS)
 ```
 
 Data citation: INRB-UMIE, *Ebola\_DRC\_2026*, build `235a3c3`, GitHub, 2026.
-Please also acknowledge the upstream data providers (INRB, INSP, WHO, Flowminder, GRID3,
-WorldPop, ACLED, OSRM) per their respective licences.
+Please also acknowledge the upstream data providers — INRB, INSP, WHO,
+Flowminder, GRID3, WorldPop, ACLED, OSRM — per their respective licences.
 
 ---
 
