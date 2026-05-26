@@ -1,0 +1,37 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Claude session data
+.claude/
+
+# Compiled Stan binaries
+seihrf_od
+seihrf_od_profile
+*.o
+*.hpp
+
+# R session artefacts
+.Rdata
+.Rhistory
+*.Rout
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+dist/
+build/
+
+# Manuscript (not public before submission/acceptance)
+manuscript/*.tex
+manuscript/*.pdf
+
+# Draft PDFs and private assessment notes
+Ebola_Lancet*.pdf
+assessment*.md
+
+# CmdStan build output
+cmdstan*/

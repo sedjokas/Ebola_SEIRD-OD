@@ -1,0 +1,11 @@
+anchor,anchor_label,perturbation,D90_deaths,pct_change
+1,"Anchre 1 : fond pré-épidémique (jours ≤16, OCHA Q1 2026)",-30%,13913.0,-10.64
+1,"Anchre 1 : fond pré-épidémique (jours ≤16, OCHA Q1 2026)",+30%,16761.8,7.66
+2,"Ancre 2 : exposition Nyankunde (jours 17–23, CDC)",-30%,15383.0,-1.19
+2,"Ancre 2 : exposition Nyankunde (jours 17–23, CDC)",+30%,15700.9,0.85
+3,"Ancre 3 : annonce CDC + évacuation (jours 24–26, CDC)",-30%,15521.8,-0.3
+3,"Ancre 3 : annonce CDC + évacuation (jours 24–26, CDC)",+30%,15608.4,0.25
+4,"Ancre 4 : cluster Rwampara/Mongbwalu (jours 27–29, DON603)",-30%,15509.1,-0.38
+4,"Ancre 4 : cluster Rwampara/Mongbwalu (jours 27–29, DON603)",+30%,15568.8,0.0
+5,"Ancre 5 : insécurité persistante (jours 30+, OCHA mai 2026)",-30%,14895.5,-4.32
+5,"Ancre 5 : insécurité persistante (jours 30+, OCHA mai 2026)",+30%,15955.6,2.48
