@@ -46,7 +46,7 @@ class Params:
     """All SEIHRF-OD parameters with units and interpretations."""
 
     # Transmission rates (day⁻¹)
-    beta_I:  float = 0.38   # community transmission
+    beta_I:  float = 0.75   # community transmission (calibrated, R0_B=1.50)
     beta_H:  float = 0.06   # hospital/ETC transmission
     beta_FR: float = 1.60   # reclaimed-body transmission  (F_R compartment)
     beta_FS: float = 0.002  # safe-burial transmission    (≈ 0)
@@ -73,7 +73,7 @@ class Params:
     alpha:      float = 0.04   # social-contagion rate of scepticism (day⁻¹)
     beta_D:     float = 8.0    # death-driven belief-update coefficient
     gamma_comm: float = 0.025  # health-communication effectiveness (day⁻¹)
-    delta_C:    float = 0.60   # conflict-amplification coefficient
+    delta_C:    float = 0.05   # conflict-amplification coefficient (rescaled after ODE fix)
 
     # Population
     N0: int = 120_000           # initial total population
@@ -154,7 +154,7 @@ def _rhs(t: float, y: np.ndarray, p: Params) -> list[float]:
 
     # Opinion-driven conversion rates
     phi    = SN / (SB + SN) if (SB + SN) > 0 else p.phi0
-    mu_BN  = p.alpha * phi                   # Believers  → Sceptics
+    mu_BN  = p.alpha * phi + p.delta_C * Ct  # Believers  to Sceptics (social + conflict)
     mu_NB  = gc + p.beta_D * Dvis            # Sceptics   → Believers
 
     # Believers (Eqs. 3–7)
