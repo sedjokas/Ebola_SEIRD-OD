@@ -27,11 +27,13 @@ stan_data <- list(
   N_pop         = 120000,         # WorldPop aggregate for affected zones
   phi0_obs      = phi0_obs,
   phi0_obs_sd   = phi0_obs_sd,
-  # Conflict pulse parameters (3 pulses x 3 values = 9 elements)
-  # Format: start_day, end_day, intensity
-  x_r_conflict  = c(5, 12, 0.80,   # pulse 1
-                    28, 35, 1.20,   # pulse 2
-                    55, 62, 0.50),  # pulse 3
+  # Conflict anchor parameters (5 anchors x 2 values = 10 elements)
+  # Format: start_day, level  (each anchor active until next start_day)
+  x_r_conflict  = c( 0, 0.30,    # anchor 1: baseline (OCHA Q1 2026)
+                    17, 0.55,    # anchor 2: Nyankunde exposure (day 17)
+                    24, 0.65,    # anchor 3: CDC announcement (day 24)
+                    27, 1.00,    # anchor 4: peak cluster Rwampara+Mongbwalu
+                    30, 0.60),   # anchor 5: persistent insecurity
   rel_tol   = 1e-6,
   abs_tol   = 1e-8,
   max_steps = 10000L
