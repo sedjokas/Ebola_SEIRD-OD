@@ -59,25 +59,38 @@ functions {
 
   // --------------------------------------------------------------------------
   // Piecewise conflict-intensity function C(t)
-  // Reconstructed from three publicly documented security events in Ituri
-  // and North Kivu (Gayer et al. 2007; Euronews 2026; NPR 2026).
-  // Passed via x_r so the ODE solver can access it.
+  // Five anchors from manuscript Data Sources section (table of security events):
   //
-  // x_r[1] = pulse1_start   (day  5)
-  // x_r[2] = pulse1_end     (day 12)
-  // x_r[3] = pulse1_level   (0.80)
-  // x_r[4] = pulse2_start   (day 28)
-  // x_r[5] = pulse2_end     (day 35)
-  // x_r[6] = pulse2_level   (1.20)
-  // x_r[7] = pulse3_start   (day 55)
-  // x_r[8] = pulse3_end     (day 62)
-  // x_r[9] = pulse3_level   (0.50)
+  //  Anchor  Days      Level   Event
+  //  1       0 to 16   0.30   OCHA pre-epidemic baseline (Q1 2026: 5 800
+  //                           protection incidents, 11 humanitarian actor
+  //                           incidents; cited in WHO DON602)
+  //  2      17 to 23   0.55   Nyankunde accidental exposure of US health
+  //                           worker (11 May = day 17; CDC/Guardian 2026)
+  //  3      24 to 26   0.65   CDC public announcement and Berlin medical
+  //                           evacuation (18 May = day 24; CDC 2026)
+  //  4      27 to 29   1.00   Peak cluster: Rwampara tent burning (21 May),
+  //                           Mongbwalu treatment-centre storming with 18
+  //                           patients in flight (23 May); Le Devoir/Al Jazeera
+  //  5      30+        0.60   Persistent insecurity: over 100 000 newly
+  //                           displaced in Ituri and North Kivu (WHO DON603)
+  //
+  // x_r layout (10 values = 5 x [start_day, level]):
+  //   x_r[1..2]   anchor 1: start=0,  level=0.30
+  //   x_r[3..4]   anchor 2: start=17, level=0.55
+  //   x_r[5..6]   anchor 3: start=24, level=0.65
+  //   x_r[7..8]   anchor 4: start=27, level=1.00
+  //   x_r[9..10]  anchor 5: start=30, level=0.60
   // --------------------------------------------------------------------------
   real conflict_C(real t, array[] real x_r) {
+    // Walk anchors from last to first: return level of the highest anchor
+    // whose start_day <= t
     real c = 0.0;
-    if (t >= x_r[1] && t <= x_r[2]) c = x_r[3];
-    if (t >= x_r[4] && t <= x_r[5]) c = x_r[6];
-    if (t >= x_r[7] && t <= x_r[8]) c = x_r[9];
+    for (k in 1:5) {
+      int idx = 2 * k - 1;          // index of start_day for anchor k
+      if (t >= x_r[idx])
+        c = x_r[idx + 1];           // update level (last match wins)
+    }
     return c;
   }
 
@@ -208,11 +221,14 @@ data {
   real<lower=0, upper=1> phi0_obs;
   real<lower=0>          phi0_obs_sd;   // uncertainty on the proxy estimate
 
-  // Conflict-intensity pulse parameters (passed to ODE via x_r)
-  // Pulse 1: days 5-12 (level 0.80)
-  // Pulse 2: days 28-35 (level 1.20)
-  // Pulse 3: days 55-62 (level 0.50)
-  array[9] real x_r_conflict;
+  // Conflict-intensity anchor parameters (5 anchors x 2 values = 10 elements)
+  // Format: [start_day_k, level_k] for k=1..5
+  // Anchor 1: day  0, C=0.30  (OCHA pre-epidemic baseline Q1 2026)
+  // Anchor 2: day 17, C=0.55  (Nyankunde accidental exposure, 11 May)
+  // Anchor 3: day 24, C=0.65  (CDC announcement + Berlin evacuation, 18 May)
+  // Anchor 4: day 27, C=1.00  (peak cluster: Rwampara+Mongbwalu, 21-23 May)
+  // Anchor 5: day 30, C=0.60  (persistent insecurity, 100k+ displaced)
+  array[10] real x_r_conflict;
 
   // ODE solver tolerance controls
   real<lower=0> rel_tol;
@@ -342,18 +358,37 @@ transformed parameters {
   for (t in 1:T)
     mu[t] = kappa * (y_hat[t][2] + y_hat[t][7]);
 
-  // Analytical R0 at initial conditions (equations 5-6 of manuscript)
-  // Derived from NGM; see Supplementary B
-  real kB   = theta_B + delta_I + gamma_I;
-  real kN   = theta_N + delta_I + gamma_I;
-  real kH   = delta_H + gamma_H;
-  real R0_B = (beta_I + beta_H * theta_B / kH) / kB;
-  real R0_N = (beta_I
-               + beta_H * theta_N / kH
-               + beta_FR / omega_FR
-                 * (psi_I * delta_I + psi_H * delta_H * theta_N / kH))
-              / kN;
-  real R0   = (1.0 - phi0) * R0_B + phi0 * R0_N;
+  // Analytical R0: dominant eigenvalue of the 2x2 effective NGM
+  // (manuscript equations 3-6 and Supplementary B)
+  //
+  // M = [(1-phi0)*R0_B,  (1-phi0)*rho_N ]
+  //     [phi0*R0_B,      phi0*R0_N      ]
+  //
+  // rho_N = non-funeral component of R0_N (i.e. R0_N with beta_FR=0)
+  // tr(M) = (1-phi0)*R0_B + phi0*R0_N
+  // det(M) = phi0*(1-phi0)*R0_B*(R0_N - rho_N) >= 0
+  // R0 = [tr(M) + sqrt(tr(M)^2 - 4*det(M))] / 2
+
+  real kB    = theta_B + delta_I + gamma_I;
+  real kN    = theta_N + delta_I + gamma_I;
+  real kH    = delta_H + gamma_H;
+
+  real R0_B  = (beta_I + beta_H * theta_B / kH) / kB;
+  real R0_N  = (beta_I
+                + beta_H * theta_N / kH
+                + beta_FR / omega_FR
+                  * (psi_I * delta_I + psi_H * delta_H * theta_N / kH))
+               / kN;
+
+  // rho_N: non-funeral component (beta_FR = 0 limit of R0_N)
+  real rho_N = (beta_I + beta_H * theta_N / kH) / kN;
+
+  // 2x2 effective NGM quantities
+  real trM   = (1.0 - phi0) * R0_B + phi0 * R0_N;
+  real detM  = phi0 * (1.0 - phi0) * R0_B * (R0_N - rho_N);
+  // detM >= 0 always; sqrt argument is non-negative by AM-GM
+  real disc  = fmax(trM * trM - 4.0 * detM, 0.0);  // guard for numerics
+  real R0    = 0.5 * (trM + sqrt(disc));
 
 } // end transformed parameters
 
