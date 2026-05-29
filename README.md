@@ -21,17 +21,22 @@ represent that. Those models assume everyone follows public-health guidance.
 Here they clearly did not.
 
 SEIHRF-OD splits the population into two groups: people who accept the EVD
-diagnosis (Believers, *B*) and people who deny it (Sceptics, *N*). Sceptics
-avoid hospitals and their deceased relatives' bodies end up in a separate
+diagnosis (Believers, *B*) and people who deny or doubt it (Sceptics, *N*).
+These are analytical categories representing levels of institutional trust;
+they carry no moral judgment about affected communities, whose distrust is a
+structural product of conflict, prior exploitation, and systemic exclusion.
+
+Sceptics avoid hospitals and their deceased relatives' bodies enter a separate
 compartment **F_R** (reclaimed bodies), with transmission coefficient
 β_FR that substantially exceeds community and hospital rates. A third layer
-tracks how the proportion of sceptics φ(t) changes over time, driven by
-social contagion, visible community deaths, health communication, and
-armed-conflict intensity C(t).
+tracks how the sceptic proportion φ(t) changes over time, driven by social
+contagion, visible community deaths, health communication, and armed-conflict
+intensity C(t).
 
-Calibration uses full Bayesian MCMC (CmdStan) on daily INSP situation-report
-data. The basic reproduction number R₀ is derived analytically via the
-Next Generation Matrix and computed across all posterior draws.
+Calibration uses full Bayesian MCMC (CmdStan/CmdStanPy) on daily INSP
+situation-report data (127 confirmed cases, SitReps 001–012). The basic
+reproduction number R₀ is derived analytically via the Next Generation Matrix
+and evaluated across all posterior draws.
 
 ---
 
@@ -42,26 +47,33 @@ Ebola_SEIHRF-OD/
 ├── seihrf_od.stan               # Stan ODE model — 12-compartment SEIHRF-OD
 ├── seihrf_od_profile.stan       # Profile-likelihood wrapper (fixes one param at a time)
 ├── run_mcmc.R                   # CmdStanR MCMC calibration script
+├── run_mcmc_py.py               # CmdStanPy MCMC calibration script (Python)
+├── figures_replot.py            # Figs 1, 3, S1, S4 — correct Table-1 parameters
+├── gen_fig2.py                  # Fig 2 — R₀ vs φ₀ and p_c vs φ₀
+├── gen_fig4.py                  # Fig 4 — Sobol tornado + prior/posterior panel
+├── bfr_robustness.py            # Supp Table S1 — β_FR prior-support sweep
+├── compute_scenarios.py         # Counterfactual S1/S2/S3/S1+S3 with MCMC CrI
 ├── profile_likelihood.py        # Profile-likelihood identifiability analysis → figS2
 ├── sensitivity_Ct.py            # C(t) sensitivity analysis → figS4
 ├── acled_pipeline.py            # C(t) reconstruction from documented security events
-├── figures.py                   # Main publication figures (Python)
+├── stan_data.json               # Prepared Stan input (127 cases, SitReps 001–012)
+├── posterior_draws.csv          # 8 000 MCMC draws (4 chains × 2 000 samples)
 ├── profile_likelihood_results.csv
 ├── sensitivity_Ct_results.csv
 ├── requirements.txt
 ├── data/
 │   ├── insp_sitrep__new_confirmed_cases__daily.csv
+│   ├── insp_sitrep__cumulative_confirmed_cases__daily.csv
 │   ├── insp_sitrep__cumulative_confirmed_deaths__daily.csv
 │   ├── insp_sitrep__cumulative_contacts_isolated__daily.csv
-│   ├── insp_sitrep__new_contacts_listed__daily.csv
-│   └── insp_sitrep__cumulative_confirmed_cases__daily.csv
-├── manuscript/imgs/             # All publication figures (PDF + PNG)
-│   ├── fig1_epidemic_opinion.*
-│   ├── fig2_R0_analysis.*
-│   ├── fig3_scenarios.*
-│   ├── fig4_sensitivity.*
-│   ├── fig5_spatial.*
-│   ├── figS1_Rt.*
+│   └── insp_sitrep__new_contacts_listed__daily.csv
+├── imgs/
+│   ├── fig1_epidemic_opinion.{pdf,png}
+│   ├── fig2_R0_analysis.{pdf,png}
+│   ├── fig3_scenarios.{pdf,png}
+│   ├── fig4_sensitivity.{pdf,png}
+│   ├── fig5_spatial.{pdf,png}
+│   ├── figS1_Rt.{pdf,png}
 │   ├── figS2_profile_likelihood.pdf
 │   └── figS4_sensitivity_Ct.pdf
 └── src/
@@ -73,38 +85,69 @@ Ebola_SEIHRF-OD/
 
 ## Getting started
 
-### MCMC calibration (R + CmdStan)
-
-```r
-# Install dependencies
-install.packages(c("cmdstanr", "posterior", "bayesplot", "loo",
-                   "dplyr", "readr", "lubridate"))
-cmdstanr::install_cmdstan()
-
-# Run
-Rscript run_mcmc.R
-```
-
-The script compiles `seihrf_od.stan`, loads INSP daily case data from
-`data/`, runs 4 chains × 2 000 warm-up + 2 000 sampling iterations, and
-prints convergence diagnostics (R̂ < 1.02 for all 8 sampled parameters,
-ESS > 450 per chain).
-
-### Profile-likelihood analysis (Python)
+### Requirements
 
 ```bash
 pip install -r requirements.txt
-python profile_likelihood.py     # → figS2_profile_likelihood.pdf
-python sensitivity_Ct.py         # → figS4_sensitivity_Ct.pdf
+```
+
+Python dependencies: `numpy`, `scipy`, `matplotlib`, `pandas`, `cmdstanpy`,
+`SALib` (Sobol sensitivity), `sympy`.
+
+### MCMC calibration (Python — recommended)
+
+```bash
+python run_mcmc_py.py
+# → posterior_draws.csv  (8 000 draws)
+# → stan_data.json
+```
+
+4 chains × 2 000 warm-up + 2 000 sampling, seed=42, CmdStanPy.
+Convergence: max R̂ = 1.0011, min ESS = 3 042 (excellent).
+
+### MCMC calibration (R)
+
+```r
+install.packages(c("cmdstanr", "posterior", "bayesplot", "loo",
+                   "dplyr", "readr", "lubridate"))
+cmdstanr::install_cmdstan()
+Rscript run_mcmc.R
+```
+
+### Generate figures
+
+```bash
+python figures_replot.py   # figs 1, 3, S1, S4
+python gen_fig2.py         # fig 2
+python gen_fig4.py         # fig 4
+```
+
+### Counterfactual scenarios
+
+```bash
+python compute_scenarios.py   # prints S1/S2/S3/S1+S3 deaths-averted table
+```
+
+### β_FR robustness (Supp Table S1)
+
+```bash
+python bfr_robustness.py   # sweeps β_FR across prior 5th–95th pct range
+```
+
+### Identifiability and sensitivity
+
+```bash
+python profile_likelihood.py   # → imgs/figS2_profile_likelihood.pdf
+python sensitivity_Ct.py       # → imgs/figS4_sensitivity_Ct.pdf
 ```
 
 ---
 
 ## The model
 
-### State variables (12 total)
+### State variables (12 compartments)
 
-| | Believers (B) | Sceptics (N) |
+|  | Believers (B) | Sceptics (N) |
 |---|---|---|
 | Susceptible | S_B | S_N |
 | Exposed | E_B | E_N |
@@ -128,14 +171,14 @@ Sceptics interact with reclaimed bodies; Believers do not.
 
 ### Opinion-dynamics layer
 
-The B↔N conversion rates are:
+B↔N conversion rates:
 
 ```
 μ_BN(t) = α·φ(t) + δ_C·C(t)       — social contagion + conflict amplification
 μ_NB(t) = γ_comm + β_D·D_vis(t)   — health communication + visible deaths
 ```
 
-The sceptic proportion φ(t) = S_N/(S_B+S_N) satisfies:
+The sceptic proportion φ(t) satisfies:
 
 ```
 dφ/dt =  α·φ(1−φ)              — scepticism spreads person-to-person
@@ -144,114 +187,135 @@ dφ/dt =  α·φ(1−φ)              — scepticism spreads person-to-person
         + δ_C·C(t)·(1−φ)      — conflict recruits Believers into Scepticism
 ```
 
-C(t) is a piecewise function reconstructed from five documented security
-events in Ituri and North Kivu (see `acled_pipeline.py` and manuscript
-Methods — Data sources). ACLED data were not used.
+C(t) is a piecewise step function anchored to five documented security events
+in Ituri and North Kivu (see `acled_pipeline.py` and the Data section below).
 
 ### Analytical reproduction number
 
 Using the Next Generation Matrix (van den Driessche & Watmough, 2002),
-the basic reproduction number is the **dominant eigenvalue** of a 2×2
-effective NGM matrix **M**:
+R₀ is the dominant eigenvalue of a 2×2 effective NGM matrix **M**:
 
 ```
 R₀ = [tr(M) + √(tr(M)² − 4·det(M))] / 2
-```
 
-where
-
-```
 tr(M)  = (1−φ₀)·R₀_B + φ₀·R₀_N
 det(M) = φ₀(1−φ₀)·R₀_B · [β_FR/ω_FR · burial term] ≥ 0
 ```
 
-The weighted average tr(M) equals the exact R₀ only when β_FR = 0.
-When body reclamation is present (β_FR > 0), the exact R₀ is below
-tr(M) by a margin bounded by det(M)/tr(M) — under 10% across the
-posterior parameter range.
+The weighted average tr(M) equals R₀ only when β_FR = 0 (no body
+reclamation). When β_FR > 0 the exact R₀ falls below tr(M) by
+det(M)/tr(M), which is under 10% across the posterior parameter range.
 
-The group-specific reproduction numbers at posterior medians are:
+Group-specific reproduction numbers at posterior medians:
 
 ```
-R₀_B ≈ 1.48   (β_I=0.74, θ_B=0.28 fixed)
-R₀_N ≈ 2.97   (β_FR=1.62, θ_N=0.04)
+R₀_B ≈ 1.641   (β_I=0.826, θ_B=0.28 fixed)
+R₀_N ≈ 3.247   (β_FR=1.610, θ_N=0.04)
 ```
 
-Posterior-median R₀ ≈ **2.40** (MCMC median across all draws). The
-plug-in estimate from parameter medians (1.94) underestimates the MCMC
-value due to the nonlinearity of the dominant-eigenvalue formula
-(Jensen effect; see Supplementary B).
+Posterior-median R₀ ≈ **2.17** (MCMC median across all 8 000 draws).
+Plug-in estimate from parameter medians: 2.172 — negligible Jensen gap
+(<0.1%) with 127 confirmed cases.
 
-A homogeneous model fitted to the same data yields R₀ ≈ 1.8, which
-**underestimates the SEIHRF-OD value by 33%**.
+A homogeneous model fitted to the same data yields R₀ ≈ 1.80, which
+**underestimates the SEIHRF-OD value by 21%**.
 
 ---
 
 ## Calibration results
 
-| Parameter | Posterior median | 95% CrI |
-|---|---|---|
-| β_I (community transmission) | 0.74 day⁻¹ | 0.60–0.91 |
-| β_FR (reclaimed-body transmission) | 1.62 day⁻¹ | 1.14–2.11 |
-| φ₀ (initial scepticism) | 0.37 | 0.27–0.50 |
-| θ_N (sceptic hospitalisation rate) | 0.04 day⁻¹ | — |
-| R₀ | **2.40** | — |
+Data: 127 confirmed cases, INRB-UMIE/Ebola_DRC_2026 build `13d78cb`
+(SitReps 001–012, data freeze 26 May 2026).
 
-Convergence: R̂ < 1.02 for all 8 sampled parameters; ESS > 450 per chain.
-83 confirmed cases across SitReps 001–007 available at calibration.
+| Parameter | Posterior median | 95% CrI | Status |
+|---|---|---|---|
+| β_I (community transmission, day⁻¹) | 0.826 | 0.69–0.96 | Data-informed |
+| β_FR (reclaimed-body transmission, day⁻¹) | 1.610 | 1.12–2.09 | Prior-dominated |
+| φ₀ (initial scepticism) | 0.392 | 0.29–0.49 | Data-informed |
+| θ_N (sceptic hospitalisation rate, day⁻¹) | prior | — | Prior-dominated |
+| α, γ_comm, δ_C | prior | — | Prior-dominated |
+| **R₀** | **2.17** | **1.82–2.54** | Derived |
+
+Convergence: max R̂ = 1.0011, min ESS = 3 042 (4 chains × 2 000 draws each).
+
+β_FR, α, and δ_C yield flat profile-likelihood curves (non-identifiable
+at the 95% level with the current data series). β_I and φ₀ are
+one-sided identifiable. All headline conclusions hold across the full
+prior support of β_FR (see `bfr_robustness.py` and Supp Table S1).
 
 ---
 
 ## Counterfactual scenarios
 
-| | Intervention | Deaths averted at day 90 (95% CrI) |
-|---|---|---|
-| S1 | Double communication rate from day 14 (γ_comm × 2) | **47%** (27–56%) |
-| S2 | Halve conflict intensity (C(t) × 0.5) | **20%** (9–31%) |
-| S3 | Eliminate body reclamation (β_FR = 0) | **38%** (20–57%) |
-| S1+S3 | Combined | **61%** (41–73%) |
+From the calibrated posterior (127 cases; cumulative deaths at day 90):
 
-CrIs are 95% posterior credible intervals across 8 000 MCMC draws
-(4 chains × 2 000 samples).
+| | Intervention | Deaths averted (median; 95% CrI) |
+|---|---|---|
+| S1 | Double communication rate from day 14 (γ_comm × 2) | **20%** (3–42%) |
+| S2 | Halve conflict intensity throughout (C(t) × 0.5) | **16%** (3–38%) |
+| S3 | Eliminate body reclamation (β_FR = 0) | **29%** (11–56%) |
+| S1+S3 | Combined | **44%** (16–67%) |
+
+**Primary inference:** the relative ranking of intervention channels
+(S3 > S1 > S2) is more robust than absolute death projections, which
+depend on 100-fold extrapolation beyond the calibration window.
+Sweeping β_FR across its prior 5th–95th percentile [1.19, 2.01] day⁻¹
+keeps S3 deaths averted in the range 26–36% and R₀_N > R₀_B at all
+values tested.
 
 ---
 
-## Identifiability
+## Sensitivity analysis
 
-Profile-likelihood analysis (Supplementary Figure S2) over 5 parameters:
+Global first-order Sobol sensitivity indices for cumulative deaths at day 90:
 
-| Parameter | Status |
-|---|---|
-| β_I | Identifiable |
-| β_FR | Identifiable |
-| φ₀ | Identifiable |
-| α (social contagion) | Prior-dominated — flat profile |
-| δ_C (conflict amplification) | Prior-dominated — flat profile |
+| Parameter | S_i | Driver role |
+|---|---|---|
+| β_I (community transmission) | **0.60** | Primary |
+| γ_comm (communication rate) | 0.15 | Secondary |
+| δ_C (conflict amplification) | 0.12 | Secondary |
+| α, β_FR, φ₀, θ_N | ≤ 0.06 each | Minor |
 
-α and δ_C are not identifiable from the current 10-day sitrep window.
-Their posteriors should be interpreted with caution.
+β_I is dominant because it updates substantially from its prior with
+127 cases. β_FR remains prior-dominated; its low Sobol index reflects
+the current identifiability limit, not a low physical importance.
+
+C(t) sensitivity: perturbing each of the five conflict-intensity anchors
+independently by ±30% changes cumulative 90-day deaths by at most **7.6%**
+(Anchor 5, persistent insecurity, days 30+). Anchors 2–4 each produce
+changes below 1.2%.
 
 ---
 
 ## Data
 
-Epidemiological input data: INSP daily situation reports (SitReps 001–007),
-sourced from [kraemer-lab/Ebola\_DRC\_2026](https://github.com/kraemer-lab/Ebola_DRC_2026)
-(build `235a3c3`, accessed 22 May 2026). Files in `data/`:
+Epidemiological input: INSP daily situation reports, sourced from
+[INRB-UMIE/Ebola\_DRC\_2026](https://github.com/INRB-UMIE/Ebola_DRC_2026),
+build `13d78cb` (data freeze 26 May 2026; accessed 28 May 2026).
 
 ```
-insp_sitrep__new_confirmed_cases__daily.csv        SitReps 001–007
-insp_sitrep__cumulative_confirmed_cases__daily.csv
-insp_sitrep__cumulative_confirmed_deaths__daily.csv
-insp_sitrep__cumulative_contacts_isolated__daily.csv
-insp_sitrep__new_contacts_listed__daily.csv
+SitReps included: 001–012 (SitRep 003 missing)
+Confirmed cases at calibration: 127
+Files:
+  insp_sitrep__new_confirmed_cases__daily.csv
+  insp_sitrep__cumulative_confirmed_cases__daily.csv
+  insp_sitrep__cumulative_confirmed_deaths__daily.csv
+  insp_sitrep__cumulative_contacts_isolated__daily.csv
+  insp_sitrep__new_contacts_listed__daily.csv
 ```
 
-Conflict-intensity function C(t): reconstructed from five documented
-security events in Ituri and North Kivu (see `acled_pipeline.py`).
-Sources: OCHA situation reports, CDC DON602/DON603, Le Devoir, WHO DON603.
+Conflict-intensity function C(t): piecewise step function anchored to
+five documented security events (see `acled_pipeline.py`):
 
-WHO situation reports used for validation:
+| Anchor | Date (model day) | C value | Event |
+|---|---|---|---|
+| 1 | Pre-epidemic (< day 17) | 0.30 | OCHA Ituri Q1 2026 background |
+| 2 | Day 17 (11 May 2026) | 0.55 | US health worker exposed at Nyankunde |
+| 3 | Day 24 (18 May 2026) | 0.65 | CDC announcement + Berlin evacuation |
+| 4 | Days 27–29 (21–23 May 2026) | 1.00 | Rwampara/Mongbwalu tent burnings |
+| 5 | Day 30+ | 0.60 | Persistent insecurity; >100 000 displaced |
+
+WHO situation reports:
 [DON602](https://www.who.int/emergencies/disease-outbreak-news/item/2026-DON602) ·
 [DON603](https://www.who.int/emergencies/disease-outbreak-news/item/2026-DON603)
 
@@ -272,12 +336,13 @@ WHO situation reports used for validation:
 }
 ```
 
-Data: kraemer-lab, *Ebola\_DRC\_2026*, build `235a3c3`, GitHub, 2026.
+Data: INRB-UMIE, *Ebola\_DRC\_2026*, build `13d78cb`, GitHub, 2026.
+[https://github.com/INRB-UMIE/Ebola\_DRC\_2026](https://github.com/INRB-UMIE/Ebola_DRC_2026)
 
 ---
 
 ## Licence
 
 Code: MIT. Data files are from INRB, INSP, and WHO; see
-[kraemer-lab/Ebola\_DRC\_2026](https://github.com/kraemer-lab/Ebola_DRC_2026)
+[INRB-UMIE/Ebola\_DRC\_2026](https://github.com/INRB-UMIE/Ebola_DRC_2026)
 for their respective licences.
