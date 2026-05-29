@@ -25,13 +25,20 @@ __pycache__/
 dist/
 build/
 
-# Manuscript (not public before submission/acceptance)
+# Manuscript — never upload online
 manuscript/*.tex
 manuscript/*.pdf
+*.tex
+ebola_seihrf_od_submission*
 
 # Draft PDFs and private assessment notes
 Ebola_Lancet*.pdf
 assessment*.md
+*assessment_report*.pdf
+
+# CmdStan chain output files
+seihrf_od-*.csv
+seihrf_od-*.txt
 
 # CmdStan build output
 cmdstan*/

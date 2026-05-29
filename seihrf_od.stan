@@ -461,10 +461,10 @@ generated quantities {
     real acc = 0.0;
     for (t in 1:T) {
       real IB_t = y_hat[t][3];
-      real IН_t = y_hat[t][8];
+      real IN_t = y_hat[t][8];
       real HB_t = y_hat[t][4];
       real HN_t = y_hat[t][9];
-      acc += delta_I * (IB_t + IН_t) + delta_H * (HB_t + HN_t);
+      acc += delta_I * (IB_t + IN_t) + delta_H * (HB_t + HN_t);
     }
     cum_deaths_pred = acc;
   }
