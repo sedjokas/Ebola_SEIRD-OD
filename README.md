@@ -1,6 +1,6 @@
 # Ebola SEIHRF-OD
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.PLACEHOLDER.svg)](https://doi.org/10.5281/zenodo.PLACEHOLDER)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20453103.svg)](https://doi.org/10.5281/zenodo.20453103)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 This repository contains the code, data, and figures for:
@@ -386,6 +386,9 @@ WHO situation reports:
 
 Data: INRB-UMIE, *Ebola\_DRC\_2026*, build `13d78cb`, GitHub, 2026.
 [https://github.com/INRB-UMIE/Ebola\_DRC\_2026](https://github.com/INRB-UMIE/Ebola_DRC_2026)
+
+Code archive: Kasereka SK, Kyamakya K, Muyembe JJT. *SEIHRF-OD v1.0.0*.
+Zenodo, 2026. [https://doi.org/10.5281/zenodo.20453103](https://doi.org/10.5281/zenodo.20453103)
 
 ---
 
