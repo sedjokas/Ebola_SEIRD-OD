@@ -1,5 +1,8 @@
 # Ebola SEIHRF-OD
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.PLACEHOLDER.svg)](https://doi.org/10.5281/zenodo.PLACEHOLDER)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 This repository contains the code, data, and figures for:
 
 > Selain K. Kasereka, Kyandoghere Kyamakya, Jean-Jacques T. Muyembe,

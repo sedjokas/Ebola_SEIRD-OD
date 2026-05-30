@@ -1,0 +1,47 @@
+{
+  "title": "SEIHRF-OD: Code, data, and figures for 'Political distrust, armed conflict, and body reclamation drive Ebola transmission dynamics in eastern DRC'",
+  "description": "Reproducibility package for the SEIHRF-OD model paper submitted to The Lancet Infectious Diseases (2026). Contains Stan/Python/R calibration code, INSP sitrep data (INRB-UMIE/Ebola_DRC_2026, build 13d78cb), posterior draws (127 confirmed cases, SitReps 001-012), all publication figures, sensitivity analysis, hold-out validation, and posterior predictive checks.",
+  "upload_type": "software",
+  "access_right": "open",
+  "license": "MIT",
+  "creators": [
+    {
+      "name": "Kasereka, Selain K.",
+      "affiliation": "Institute of Smart Systems Technologies, University of Klagenfurt; Institut National de Recherche Biomédicale (INRB), Kinshasa, DRC",
+      "orcid": ""
+    },
+    {
+      "name": "Kyamakya, Kyandoghere",
+      "affiliation": "Institute of Smart Systems Technologies, University of Klagenfurt",
+      "orcid": ""
+    },
+    {
+      "name": "Muyembe, Jean-Jacques T.",
+      "affiliation": "Institut National de Recherche Biomédicale (INRB) / One Health Institute for Africa (INOHA), Kinshasa, DRC",
+      "orcid": ""
+    }
+  ],
+  "keywords": [
+    "Ebola",
+    "Bundibugyo virus",
+    "SEIHRF-OD",
+    "opinion dynamics",
+    "epidemic modelling",
+    "body reclamation",
+    "Democratic Republic of Congo",
+    "conflict",
+    "reproduction number",
+    "Bayesian calibration",
+    "Stan",
+    "CmdStanPy"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/INRB-UMIE/Ebola_DRC_2026",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ],
+  "version": "1.0.0",
+  "language": "eng"
+}
