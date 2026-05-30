@@ -54,9 +54,11 @@ Ebola_SEIHRF-OD/
 ├── figures_replot.py            # Figs 1, 3, S1, S4 — correct Table-1 parameters
 ├── gen_fig2.py                  # Fig 2 — R₀ vs φ₀ and p_c vs φ₀
 ├── gen_fig4.py                  # Fig 4 — Sobol tornado + prior/posterior panel
+├── gen_ppc.py                   # Posterior predictive check → figS_ppc
+├── holdout_validation.py        # 8/3 hold-out validation → figS_holdout
 ├── bfr_robustness.py            # Supp Table S1 — β_FR prior-support sweep
 ├── compute_scenarios.py         # Counterfactual S1/S2/S3/S1+S3 with MCMC CrI
-├── profile_likelihood.py        # Profile-likelihood identifiability analysis → figS2
+├── profile_likelihood.py        # Profile-likelihood identifiability → figS2
 ├── sensitivity_Ct.py            # C(t) sensitivity analysis → figS4
 ├── acled_pipeline.py            # C(t) reconstruction from documented security events
 ├── stan_data.json               # Prepared Stan input (127 cases, SitReps 001–012)
@@ -71,14 +73,16 @@ Ebola_SEIHRF-OD/
 │   ├── insp_sitrep__cumulative_contacts_isolated__daily.csv
 │   └── insp_sitrep__new_contacts_listed__daily.csv
 ├── imgs/
-│   ├── fig1_epidemic_opinion.{pdf,png}
-│   ├── fig2_R0_analysis.{pdf,png}
-│   ├── fig3_scenarios.{pdf,png}
-│   ├── fig4_sensitivity.{pdf,png}
-│   ├── fig5_spatial.{pdf,png}
-│   ├── figS1_Rt.{pdf,png}
-│   ├── figS2_profile_likelihood.pdf
-│   └── figS4_sensitivity_Ct.pdf
+│   ├── fig1_epidemic_opinion.{pdf,png}   # Epidemic curve + opinion dynamics
+│   ├── fig2_R0_analysis.{pdf,png}        # R₀ vs φ₀ and p_c panels
+│   ├── fig3_scenarios.{pdf,png}          # Counterfactual scenarios
+│   ├── fig4_sensitivity.{pdf,png}        # Sobol tornado + prior/posterior
+│   ├── fig5_spatial.{pdf,png}            # Spatial covariates (metapopulation)
+│   ├── figS1_Rt.{pdf,png}               # Time-varying Rt
+│   ├── figS2_profile_likelihood.pdf      # Profile-likelihood identifiability
+│   ├── figS4_sensitivity_Ct.pdf          # C(t) sensitivity
+│   ├── figS_ppc.{pdf,png}               # Posterior predictive check (all 13 days)
+│   └── figS_holdout.{pdf,png}           # Hold-out validation (8/3 split)
 └── src/
     ├── seihrf_od_model.py       # Python ODE implementation (exploratory)
     └── seird_od_model.py
@@ -142,6 +146,17 @@ python bfr_robustness.py   # sweeps β_FR across prior 5th–95th pct range
 ```bash
 python profile_likelihood.py   # → imgs/figS2_profile_likelihood.pdf
 python sensitivity_Ct.py       # → imgs/figS4_sensitivity_Ct.pdf
+```
+
+### Validation
+
+```bash
+# Posterior predictive check (uses existing posterior_draws.csv — no new MCMC)
+python gen_ppc.py              # → imgs/figS_ppc.pdf/.png
+
+# 8/3 hold-out validation (runs new MCMC on 10-day calibration set, ~2 min)
+# Result cached in posterior_calib.csv after first run
+python holdout_validation.py   # → imgs/figS_holdout.pdf/.png
 ```
 
 ---
@@ -287,6 +302,36 @@ C(t) sensitivity: perturbing each of the five conflict-intensity anchors
 independently by ±30% changes cumulative 90-day deaths by at most **7.6%**
 (Anchor 5, persistent insecurity, days 30+). Anchors 2–4 each produce
 changes below 1.2%.
+
+---
+
+## Validation
+
+### Posterior predictive check (full dataset)
+
+Using all 8 000 posterior draws on the 13-day observed series:
+
+| | 50% CrI | 95% CrI |
+|---|---|---|
+| Coverage (13 days) | 6/13 (46%) | 11/13 (85%) |
+
+### Hold-out validation — 8/3 split
+
+Calibration on days 1–10 (14–23 May 2026, 105 cases) with days 11–13
+(24–26 May, 21 cases) held out as the validation set. The split places
+the full acute conflict peak in calibration and tests forecast accuracy
+on the subsequent persistent-insecurity regime.
+
+Calibration posterior (T=10): β_I=0.832 [0.710, 0.956], R₀=2.19 [1.87, 2.52],
+max R̂=1.001, min ESS=3 133 — consistent with full-data posterior.
+
+| | 50% CrI | 95% CrI |
+|---|---|---|
+| Calibration coverage (10 days) | 3/10 (30%) | 9/10 (90%) |
+| **Forecast coverage (3 held-out days)** | 1/3 (33%) | **3/3 (100%)** ✅ |
+
+All three held-out observations (24–26 May) fall within the 95% credible
+interval of the out-of-sample forecast.
 
 ---
 
